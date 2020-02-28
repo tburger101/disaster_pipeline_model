@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Disaster Response Pipeline Project
 
 ### Instructions:
@@ -12,3 +13,7 @@
     `python run.py`
 
 3. Go to http://0.0.0.0:3001/
+=======
+# disaster_pipeline_model
+disaster pipeline model
+>>>>>>> 3cac2dc87cc98048f1ab9a5a2797d6e8337f5e8f
