@@ -1,17 +1,67 @@
 import sys
+import re
+import nltk
+nltk.download(['punkt', 'wordnet'])
+from nltk.corpus import stopwords
+import numpy as np
+import pandas as pd
+from nltk.tokenize import word_tokenize
+from nltk.stem import WordNetLemmatizer
 
+from sklearn.metrics import confusion_matrix, classification_report
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import train_test_split, GridSearchCV
+from sklearn.pipeline import Pipeline, FeatureUnion
+from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
+from sklearn.datasets import make_multilabel_classification
+from sklearn.multioutput import MultiOutputClassifier
 
 def load_data(database_filepath):
-    pass
-
+    '''Loading data from the message table in the database'''
+    
+    from sqlalchemy import create_engine
+    engine = create_engine("sqlite:///"+str(database_filepath))
+    df = pd.read_sql('SELECT * FROM messages', engine)
+    X = df['message'].values
+    Y = df.drop(['message', 'original', 'genre'], axis=1).values
+    category_names=Y.columns
+    return(X,Y, cateogry_names)
 
 def tokenize(text):
-    pass
+    '''Breaking the messages into a list of single words to be used in
+    nlp pipeline'''
+    
+    # normalize case and remove punctuation
+    text = re.sub(r"[^a-zA-Z0-9]", " ", text.lower())
+    
+    # tokenize text
+    tokens = word_tokenize(text)
+    
+    # lemmatize andremove stop words
+    lemmatizer = WordNetLemmatizer()
+    tokens = [lemmatizer.lemmatize(word) for word in tokens if word not in stopwords.words("english")]
+
+    return tokens
 
 
 def build_model():
-    pass
+    '''Creating a pipeline and grid search model which can be optimized'''
+    
+    #Bulding the pipeline
+    pipeline = Pipeline([
+        ('vect', CountVectorizer(tokenizer=tokenize)),
+        ('tfidf', TfidfTransformer()),
+        ('clf', MultiOutputClassifier(RandomForestClassifier()))])
+    
+    #Giving the model parameters to tune
+    parameters =  parameters = {
+        'clf__estimator__n_estimators': [50, 100, 200],
+        'clf__estimator__min_samples_split': [2, 3, 4],
+        'clf__estimator__class_weight': ['balanced']}
 
+    cv = GridSearchCV(pipeline, param_grid=parameters, n_jobs=-1)
+    return(cv)
 
 def evaluate_model(model, X_test, Y_test, category_names):
     pass

@@ -20,7 +20,9 @@ def load_data(messages_filepath, categories_filepath):
     return(df)
 
 def clean_data(df):
-     
+    '''Changing the single category variable into 36 individual variables so
+    a different model can be trained to predict each class'''
+    
     #Splitting the category column into 36 different columns
     categories_split = df['categories'].str.split(";", expand=True)
     row = categories_split.iloc[0].values
