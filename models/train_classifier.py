@@ -1,13 +1,11 @@
-import sys
-import re
-import nltk
+import sys, pickle, re,  nltk
 nltk.download(['punkt', 'wordnet'])
 from nltk.corpus import stopwords
 import numpy as np
 import pandas as pd
 from nltk.tokenize import word_tokenize
 from nltk.stem import WordNetLemmatizer
-
+nltk.download('stopwords')
 from sklearn.metrics import confusion_matrix, classification_report
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split, GridSearchCV
@@ -25,12 +23,13 @@ def load_data(database_filepath):
     df = pd.read_sql('SELECT * FROM messages', engine)
     X = df['message'].values
     Y = df.drop(['message', 'original', 'genre'], axis=1).values
-    category_names=Y.columns
-    return(X,Y, cateogry_names)
+    category_names=df.drop(['message', 'original', 'genre'], axis=1).columns
+    return(X,Y, category_names)
 
 def tokenize(text):
     '''Breaking the messages into a list of single words to be used in
     nlp pipeline'''
+    
     
     # normalize case and remove punctuation
     text = re.sub(r"[^a-zA-Z0-9]", " ", text.lower())
@@ -52,11 +51,10 @@ def build_model():
     pipeline = Pipeline([
         ('vect', CountVectorizer(tokenizer=tokenize)),
         ('tfidf', TfidfTransformer()),
-        ('clf', MultiOutputClassifier(RandomForestClassifier()))])
+        ('clf', MultiOutputClassifier(RandomForestClassifier(n_jobs=-1)))])
     
     #Giving the model parameters to tune
-    parameters =  parameters = {
-        'clf__estimator__n_estimators': [50, 100, 200],
+    parameters = {'tfidf__use_idf': (True, False),
         'clf__estimator__min_samples_split': [2, 3, 4],
         'clf__estimator__class_weight': ['balanced']}
 
@@ -64,11 +62,22 @@ def build_model():
     return(cv)
 
 def evaluate_model(model, X_test, Y_test, category_names):
-    pass
+    '''prints out the classification report for each of the
+    36 differnet categories'''
+    
+    predictions = model.predict(X_test)
+    predictions_df=pd.DataFrame(predictions, columns = category_names)
+    y_test_df=pd.DataFrame(Y_test, columns = category_names)
+    
+    for column in predictions_df.columns:
+        print(column)
+        print(classification_report(y_test_df[column], predictions_df[column]))
 
 
 def save_model(model, model_filepath):
-    pass
+    '''pickle the model to be used later'''
+    
+    pickle.dump(model, open(model_filepath, 'wb'))
 
 
 def main():

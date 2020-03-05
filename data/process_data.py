@@ -46,6 +46,8 @@ def clean_data(df):
     return(df)
 
 def save_data(df, database_filename):
+    '''saving data to a database'''
+    
     engine_text="sqlite:///"+str(database_filename)
     engine = create_engine(engine_text)
     df.to_sql('messages', engine, index=False)  
