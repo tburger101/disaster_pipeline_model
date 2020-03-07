@@ -17,6 +17,8 @@ randomforrest model was trained on historical messages and is used for predictio
 * sklearn
 * numpy
 * pandas
+* sqlalchemy
+* nltk
 
 ### Instructions:
 1. Run the following commands in the project's root directory to set up your database and model.
