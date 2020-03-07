@@ -53,10 +53,12 @@ def build_model():
         ('tfidf', TfidfTransformer()),
         ('clf', MultiOutputClassifier(RandomForestClassifier(n_jobs=-1)))])
     
-    #Giving the model parameters to tune
+    #Giving the model parameters to tune.
     parameters = {'tfidf__use_idf': (True, False),
+        'vect__max_features': (None, 5000),
         'clf__estimator__min_samples_split': [2, 3, 4],
-        'clf__estimator__class_weight': ['balanced']}
+        'clf__estimator__class_weight': ['balanced']
+                 }
 
     cv = GridSearchCV(pipeline, param_grid=parameters, n_jobs=-1)
     return(cv)
